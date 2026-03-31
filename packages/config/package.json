@@ -1,0 +1,23 @@
+{
+  "name": "@printfarm/config",
+  "version": "0.0.1",
+  "private": true,
+  "exports": {
+    "./env": "./src/env.ts",
+    "./features": "./src/features.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --coverage",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@printfarm/tsconfig": "workspace:*",
+    "@vitest/coverage-v8": "^2.0.0",
+    "typescript": "^5.6.0",
+    "vitest": "^2.0.0"
+  }
+}

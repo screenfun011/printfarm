@@ -1,0 +1,79 @@
+---
+description: "Backend API rules for Hono.js routes and services"
+globs: ["apps/api/**", "apps/admin-api/**"]
+alwaysApply: false
+---
+
+# Backend rules
+
+## Struktura modula (uvek ovaj raspored fajlova)
+```
+modules/X/
+  schema.ts    ← Zod schemas za ovaj modul
+  service.ts   ← business logic, DB pozivi
+  router.ts    ← Hono route handlers, samo HTTP logika
+  types.ts     ← izvedeni TypeScript tipovi
+  __tests__/
+    service.test.ts
+    router.test.ts
+```
+
+## Router
+- Router handler prima request, zove service, vraća response
+- Nema business logike u routeru
+- Validacija inputa: uvek `zValidator` iz `@hono/zod-validator`
+- Svaki route ima eksplicitan return tip
+
+## Service
+- Service prima `deps` kao prvi parametar, nikad direktni importi
+- Pattern: `export function createXService(deps: XServiceDeps) { return { ... } }`
+- Nema HTTP znanja u servisu (nema `c.json`, `c.status`)
+- Nema direktnih Stripe/email/MQTT poziva — idu kroz deps
+
+## Middleware redosled (ne menjati)
+1. `rateLimitMiddleware`
+2. `authMiddleware` — validira JWT, stavlja user u context
+3. `tenantMiddleware` — proverava status tenanta, stavlja tenantId u context
+4. `featureMiddleware` — proverava da li je feature aktivan
+5. route handler
+
+## Tenant izolacija
+- `tenant_id` uvek dolazi iz `c.get('tenantId')` — nikad iz request body
+- Svaki DB query mora imati `eq(table.tenantId, tenantId)` ili idi kroz RLS
+- Nikad ne verovati `tenant_id` koji dolazi sa klijenta
+
+## Database pattern
+```typescript
+const { rows } = await deps.db
+  .select({ id: printers.id, name: printers.name })  // eksplicitne kolone
+  .from(printers)
+  .where(and(
+    eq(printers.tenantId, tenantId),
+    eq(printers.id, printerId),
+    eq(printers.isActive, true)
+  ))
+  .limit(1)
+```
+
+## WebSocket poruke
+- Svi eventi koriste `WsEvent` tip iz `@printfarm/shared/ws-events`
+- Validacija sa `wsEventSchema.safeParse()` pre procesiranja
+- Nikad ne šalji raw JSON bez typed envelope-a
+
+## Error handling
+```typescript
+// Uvek ovaj format
+return c.json({
+  success: false,
+  error: { code: API_ERROR_CODES.NOT_FOUND, message: 'Printer nije pronađen' }
+}, 404)
+```
+
+## Feature flags u rutama
+```typescript
+// Cloud-only ruta
+app.use('/billing/*', (c, next) => {
+  if (!features.billing) return c.json({ success: false, error: { code: 'FEATURE_DISABLED', message: 'Nije dostupno u lokalnoj varijanti' } }, 403)
+  return next()
+})
+```

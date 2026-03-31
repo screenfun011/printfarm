@@ -1,0 +1,61 @@
+---
+description: "Python bridge and AI service rules"
+globs: ["apps/bridge/**", "apps/ai-service/**"]
+alwaysApply: false
+---
+
+# Python service rules
+
+## Struktura (bridge)
+```
+apps/bridge/src/
+  mqtt/         ← BambuMQTTClient po printeru
+  camera/       ← JPEG frame extraction
+  tunnel/       ← Cloudflare tunnel manager
+  api/          ← HTTP klijent prema cloud API-ju
+  models/       ← Pydantic modeli za sve poruke
+```
+
+## MQTT (Bambu specifično)
+- Jedna `BambuMQTTClient` instanca po printeru — nikad deliti konekcije
+- Reconnect: exponential backoff, base=1s, max=60s
+- Developer Mode mora biti aktivan na printeru
+- Svi MQTT eventi se loguju sa printer serial + timestamp
+- Ako MQTT padne, kamera i dalje radi ako može lokalno
+
+## Kamera
+- Frame svakih 30 sekundi po printeru — ne stream kontinuirano
+- Frame se šalje na AI servis tek ako je AI feature aktivan za tenant
+- Greška pri frame extraction ne zaustavlja MQTT monitoring
+- Frame se čuva lokalno max 60 sekundi, posle briše
+
+## AI servis
+- Inference je stateless — nema session state između requestova
+- Model se učitava jednom pri startu, nikad per-request
+- Confidence threshold: čita se iz env var, nikad hardcoded
+- Timeout za inference: 5 sekundi max, posle vraća null
+
+## Pydantic modeli
+- Svaka poruka prema cloud API-ju ima Pydantic model
+- Svi modeli su u `src/models/`
+- Nikad dict sa string key-evima za API komunikaciju
+
+## Error handling (svaka komponenta failuje nezavisno)
+```python
+# Ovaj pattern za sve komponente
+try:
+    result = await component.do_thing()
+except ComponentError as e:
+    logger.error("Component greška", extra={"printer": serial, "error": str(e)})
+    # Nastavi, ne propagiraj gore
+```
+
+## Logovanje
+- Strukturirani logovi (JSON format)
+- Svaki log ima: `timestamp`, `level`, `component`, `printer_serial` (ako relevantno)
+- Nema `print()` — uvek `logger.X()`
+
+## Testovi (pytest)
+- Svaki MQTT handler ima unit test sa mock konekcijom
+- AI inference testovi koriste test slike, ne pravi model
+- Bridge se testira bez pravog Bambu printera

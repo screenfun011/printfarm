@@ -1,0 +1,62 @@
+---
+description: "Database schema and migration rules"
+globs: ["packages/db/**"]
+alwaysApply: false
+---
+
+# Database rules
+
+## Schema organizacija
+- Jedan fajl po domenu: `auth.ts`, `printers.ts`, `jobs.ts`, `billing.ts`, `events.ts`, `admin.ts`
+- Svaka tabela koja pripada tenantu ima `tenant_id` kao drugu kolonu (posle `id`)
+- Enum vrednosti se definišu kao `pgEnum` — nikad kao TypeScript string union u schema fajlu
+- `created_at` je obavezna za sve tabele, `updated_at` za sve gde se podaci menjaju
+
+## Relacije
+- Svaka tabela ima `XRelations` blok ispod definicije tabele
+- FK constraints imaju eksplicitan `onDelete` — nikad podrazumevano
+- Soft delete tabele: `deleted_at` kolona, nikad fizičko brisanje iz app koda
+
+## Migracije
+- Imenovanje: `0001_kratki_opis.sql`, `0002_drugi_opis.sql`
+- Migracije su append-only — nikad ne menjaj postojeću migraciju
+- Svaka migracija mora biti primenljiva više puta bez greške (idempotent)
+
+## Indeksi (obavezni)
+- Svaki FK automatski dobija index
+- Svaka kolona u `WHERE` klauzuli dobija index
+- Compound index: najselektivnija kolona prva
+- Audit logs i printer_events: particioni po `created_at` mesečno
+
+## Query pattern
+```typescript
+// Uvek eksplicitne kolone, nikad select *
+const printer = await db
+  .select({
+    id: printers.id,
+    name: printers.name,
+    status: printers.status,
+  })
+  .from(printers)
+  .where(and(
+    eq(printers.tenantId, tenantId),
+    eq(printers.id, printerId),
+  ))
+  .limit(1)
+  .then(rows => rows[0] ?? null)
+```
+
+## RLS
+- `ALTER TABLE X ENABLE ROW LEVEL SECURITY` za svaku tabelu sa `tenant_id`
+- Policy: `USING (tenant_id = current_setting('app.current_tenant_id')::uuid)`
+- `app.current_tenant_id` se setuje u middleware pre svakog DB poziva
+- Nikad ne zaobiđi RLS u app kodu
+
+## Audit logs
+- `audit_logs` je insert-only — nema UPDATE ni DELETE nikad
+- Logovati: svaka admin akcija, svaka security relevantna akcija
+- Retention: 2 godine, posle arhiviranje
+
+## Immutable tabele
+- `printer_events` i `audit_logs` su immutable — samo INSERT
+- Ne postavljaj `updated_at` na ove tabele

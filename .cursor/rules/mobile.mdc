@@ -1,0 +1,44 @@
+---
+description: "Mobile rules for React Native + Expo"
+globs: ["apps/mobile/**"]
+alwaysApply: false
+---
+
+# Mobile rules
+
+## Struktura
+- Screens u `src/screens/` — jedan fajl po ekranu
+- Modules u `src/modules/` — isti pattern kao web (api.ts, components/, hooks/)
+- Shared logika sa web-om ide u `packages/shared` — ne duplikovati
+
+## Navigation
+- Expo Router, file-based u `app/` direktorijumu
+- Protected routes koriste `_layout.tsx` sa auth guard-om
+- Deep linking konfigurisan za svaki ekran koji prima params
+
+## Data fetching
+- Isti TanStack Query pattern kao web
+- Isti API klijent — ne pišemo poseban klijent za mobile
+- Push notifikacije: `expo-notifications`, token se registruje pri login-u
+
+## Push notifikacije
+```typescript
+// Registracija tokena — uvek pri login-u
+const token = await registerForPushNotificationsAsync()
+if (token) await apiClient.pushTokens.register({ token, platform })
+```
+
+## Performance
+- Flatlist umesto ScrollView za liste koje mogu da porastu
+- `React.memo` za komponente koje se re-renderuju u listama
+- Slike kroz `expo-image`, ne `Image` iz React Native
+
+## Offline handling
+- Query cache ostaje dostupan offline
+- Jasna UI indikacija kada je korisnik offline
+- Mutacije se queue-uju i šalju kada se veza uspostavi
+
+## Native specifično
+- Kamera za QR skeniranje: `expo-camera`
+- Biometrija (opciono, v2): `expo-local-authentication`
+- Nema native modula koji nisu u Expo SDK bez explicitnog odobrenja

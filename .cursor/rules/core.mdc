@@ -1,0 +1,64 @@
+---
+description: "Core rules — apply to everything in this project"
+alwaysApply: true
+---
+
+# PrintFarm — core rules
+
+## Deployment mode (najvažnije pravilo)
+- DEPLOYMENT_MODE kontroliše sve — 'cloud' ili 'local'
+- Uvek importuj iz `@printfarm/config/features`, nikad ne čitaj `process.env.DEPLOYMENT_MODE` direktno
+- Svaki feature koji se razlikuje između modova ide kroz `features.X`, ne kroz inline if-ove
+- Local varijanta mora raditi bez ijedne cloud zavisnosti ako `isLocal()` je true
+
+## TypeScript
+- strict mode, bez izuzetaka
+- Nema `any` — ako ne znaš tip, definišiš ga
+- Nema `as` castinga bez komentara koji objašnjava zašto
+- Tipovi dolaze iz Zod schemas: `type X = z.infer<typeof XSchema>`
+- Schemas žive u `packages/shared/src/schemas/`
+
+## Validacija
+- Zod je jedini izvor istine za sve data shapes
+- Validacija se radi na svakoj granici: API input, WS poruke, env var
+- Isti schema se koristi na frontendu i backendu — nema duplikacije
+- Ako schema nije u `packages/shared`, ne postoji
+
+## API response format
+- Uspeh: `{ success: true, data: T }`
+- Greška: `{ success: false, error: { code: string, message: string } }`
+- Error kodovi dolaze iz `API_ERROR_CODES` konstante u `packages/shared`
+- Nema custom error formata ni u jednom routeru
+
+## Dependency injection
+- Funkcija nikada ne importuje DB, email, Stripe, MQTT direktno
+- Sve zavisnosti dolaze kao parametri ili kroz factory funkciju
+- `createXService(deps: XServiceDeps)` — ovaj pattern, uvek
+- Ako ne možeš da mock-uješ dependency u testu, refaktoriši odmah
+
+## Testovi (blokira sve ostalo)
+- Svaka nova service funkcija mora imati test pre nego što se piše sledeći kod
+- Test pada → STOP, ispravi, tek onda nastavi
+- Coverage minimum 85% za `packages/` i `apps/api/src/modules/`
+- Test fajlovi: `__tests__/naziv.test.ts` pored fajla koji testiraju
+
+## Definition of done — ništa nije gotovo dok ovo nije tačno
+- [ ] Unit test: happy path
+- [ ] Unit test: svaki error case
+- [ ] Unit test: edge cases (null, empty, boundary)
+- [ ] API route: integration test za svaki status kod
+- [ ] Funkcija: max 40 linija
+- [ ] Fajl: max 300 linija
+- [ ] Nema cross-module importa
+
+## Modularnost
+- Svaki modul: `schema.ts`, `service.ts`, `router.ts`, `types.ts`
+- Moduli ne importuju jedan od drugog direktno
+- Shared logika ide u `packages/shared` ili `packages/config`
+- Dodavanje feature-a ne sme da zahteva izmenu više od 3 nepovezana fajla
+
+## Nema hardcoding-a
+- Nema hardcodovanih URL-ova, portova, tajni, ID-jeva, limita
+- Sve konstante u `packages/shared/src/constants.ts`
+- Sve env var čitaju se kroz `packages/config/src/env.ts`
+- Nema magic numbers bez named konstante

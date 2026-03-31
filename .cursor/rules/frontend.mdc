@@ -1,0 +1,62 @@
+---
+description: "Frontend rules for React + TanStack Stack"
+globs: ["apps/web/**", "apps/admin/**"]
+alwaysApply: false
+---
+
+# Frontend rules
+
+## State management (striktno)
+- TanStack Query za SVE server state — nema `useState` za API podatke
+- Zustand SAMO za UI state: modal otvoren/zatvoren, sidebar, lokalni toggle
+- Nema direktnih `fetch()` poziva ni van Query funkcija
+- Query keys su uvek arrays: `['printers', tenantId]`, `['job', jobId]`
+
+## Real-time (WebSocket + Query)
+- WS eventi invalidiraju Query cache: `queryClient.setQueryData(key, updater)`
+- Nikad ne mešaj polling i WebSocket za isti podatak
+- WS konekcija se otvara jednom u root provideru, ne po komponenti
+
+## Routing
+- TanStack Router, file-based u `src/routes/`
+- Route params validiraju se sa Zod shemom iz `packages/shared`
+- Loaders fetchuju podatke pre rendera — nema loading spinera u komponentama ako se može izbeći
+- Protected routes proveravaju auth u beforeLoad
+
+## Komponente
+- Leaf komponente primaju podatke kao props, ne fetchuju same
+- shadcn/ui komponente su baza — extend-uj, ne modifikuj originale
+- Nema inline stilova — samo Tailwind klase
+- Nema `className` concatenation stringovima — koristi `cn()` iz shadcn
+
+## Feature flags u UI
+```tsx
+// Ovaj pattern, uvek
+{features.billing && <BillingSection />}
+{features.aiDetection && <AiDetectionPanel printerId={id} />}
+```
+
+## Forme
+- React Hook Form + Zod resolver — nikakva druga forma biblioteka
+- Validation schema import iz `packages/shared` — isti schema kao backend
+- Nema ručne validacije u komponentama
+
+## API klijent
+```typescript
+// Nema direktnog fetch, uvek kroz apiClient
+const { data } = useQuery({
+  queryKey: ['printers', tenantId],
+  queryFn: () => apiClient.printers.list(),
+})
+```
+
+## Greške
+- Svaka Query funkcija ima `onError` koji prikazuje korisniku poruku
+- API greške se prikazuju uz toast notifikaciju, ne u konzoli
+- Loading, error i empty state su obavezni za svaki fetch
+
+## Imports (redosled)
+1. React i hooks
+2. Eksterni paketi (tanstack, shadcn)
+3. Interni paketi (`@printfarm/...`)
+4. Relativni importi (`../`, `./`)

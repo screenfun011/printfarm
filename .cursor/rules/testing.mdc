@@ -1,0 +1,77 @@
+---
+description: "Testing standards and patterns"
+globs: ["**/*.test.ts", "**/*.test.tsx", "**/*.spec.ts"]
+alwaysApply: false
+---
+
+# Testing rules
+
+## Redosled rada (ne smeš preskočiti)
+1. Napiši Zod schema → test da validira ispravno i odbija neispravno
+2. Napiši service funkciju → unit test pre nego što radi išta pravo
+3. Napiši route → integration test za svaki status kod
+4. Napiši komponentu → render + interaction test
+5. Pokreni sve testove → svi zeleni pre sledećeg koraka
+
+## Unit testovi — service funkcije
+```typescript
+describe('printerService.add', () => {
+  it('kreira printer i vraća ga', async () => { ... })
+  it('baca grešku ako serial postoji u tenantu', async () => { ... })
+  it('baca grešku ako je dostignut limit printera', async () => { ... })
+  it('baca grešku ako IP adresa nije dostupna', async () => { ... })
+})
+```
+- Mock-uj DB, email, Stripe, MQTT — ne pravi konekcije u unit testovima
+- `vi.fn()` za svaki dependency
+- Jedan `describe` po funkciji, jedan `it` po scenariju
+
+## Integration testovi — API rute
+```typescript
+describe('POST /printers', () => {
+  it('201 — printer kreiran sa validnim podacima', async () => { ... })
+  it('400 — invalid IP adresa', async () => { ... })
+  it('401 — bez auth tokena', async () => { ... })
+  it('403 — pogrešan tenant', async () => { ... })
+  it('409 — serial već postoji', async () => { ... })
+})
+```
+- Koristi test PostgreSQL bazu (ne mock)
+- Svaki test čisti podatke koje je kreirao
+- Nema shared state između testova
+
+## Vitest konfiguracija
+```typescript
+// vitest.config.ts
+export default defineConfig({
+  test: {
+    coverage: {
+      provider: 'v8',
+      thresholds: { lines: 85, functions: 85, branches: 80 },
+      exclude: ['**/*.test.ts', '**/index.ts', '**/__tests__/**'],
+    },
+  },
+})
+```
+
+## Naming konvencija
+- Describe: naziv funkcije ili route-a
+- It: šta se dešava u ovom scenariju (konkretno, ne generično)
+- Loše: `it('radi ispravno')`
+- Dobro: `it('vraća 409 ako printer sa istim serialom već postoji u tenantu')`
+
+## Mock pattern
+```typescript
+const mockDb = {
+  select: vi.fn().mockReturnThis(),
+  from: vi.fn().mockReturnThis(),
+  where: vi.fn().mockResolvedValue([mockPrinter]),
+}
+
+const service = createPrinterService({ db: mockDb as unknown as Database })
+```
+
+## Šta se ne testira
+- Drizzle ORM interno ponašanje
+- Zod validacija samih schema fajlova (to je Zod-ov posao)
+- External API-ji (Stripe, Bambu) — samo mock-uj ih
