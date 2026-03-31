@@ -1,9 +1,13 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 
 describe('feature flags', () => {
+  beforeEach(() => {
+    vi.resetModules()
+  })
+
   it('cloud mode aktivira cloud feature-e', async () => {
     vi.doMock('../env', () => ({
-      env: { DEPLOYMENT_MODE: 'cloud', CLOUD_CONNECT_ENABLED: false },
+      env: { DEPLOYMENT_MODE: 'cloud' },
     }))
 
     const { features, isCloud, isLocal } = await import('../features')
@@ -32,6 +36,7 @@ describe('feature flags', () => {
     expect(features.superAdmin).toBe(false)
     expect(features.rls).toBe(false)
     expect(features.licenseCheck).toBe(true)
+    expect(features.cloudConnect).toBe(false)
   })
 
   it('local + cloud connect aktivan kada je CLOUD_CONNECT_ENABLED true', async () => {

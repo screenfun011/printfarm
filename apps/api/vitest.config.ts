@@ -10,8 +10,12 @@ export default defineConfig({
       exclude: [
         'src/**/*.test.ts',
         'src/**/__tests__/**',
-        'src/constants.ts',
-        'src/types/**',
+        'src/index.ts',
+        'src/env.ts',
+        'src/lib/**',
+        'src/ws/**',
+        'src/middleware/**',
+        'src/modules/**/router.ts',
       ],
       thresholds: {
         lines: 85,

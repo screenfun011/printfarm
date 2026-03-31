@@ -80,7 +80,9 @@ describe('env validacija', () => {
 
       const { env } = await import('../env')
       expect(env.DEPLOYMENT_MODE).toBe('local')
-      expect(env.CLOUD_CONNECT_ENABLED).toBe(false)
+      if (env.DEPLOYMENT_MODE === 'local') {
+        expect(env.CLOUD_CONNECT_ENABLED).toBe(false)
+      }
     })
 
     it('ne zahteva Stripe var u local mode', async () => {
