@@ -8,6 +8,7 @@ import { features } from '@printfarm/config/features'
 import { API_ERROR_CODES } from '@printfarm/shared/types'
 import { apiEnv } from './env'
 import { defaultRateLimit } from './middleware/rate-limit'
+import { authRouter } from './modules/auth/router'
 import { printersRouter } from './modules/printers/router'
 import { createWsServer } from './ws/server'
 import { closeDb } from './lib/db'
@@ -33,6 +34,7 @@ app.get('/health', (c) => c.json({
   },
 }))
 
+app.route('/auth', authRouter)
 app.route('/printers', printersRouter)
 
 app.onError((err, c) => {

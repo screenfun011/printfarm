@@ -17,14 +17,17 @@
     "@printfarm/config": "workspace:*",
     "@printfarm/db": "workspace:*",
     "@printfarm/shared": "workspace:*",
+    "bcryptjs": "^3.0.3",
     "drizzle-orm": "^0.36.0",
     "hono": "^4.7.0",
     "ioredis": "^5.4.1",
+    "otplib": "^13.4.0",
     "ws": "^8.18.0",
     "zod": "^3.23.8"
   },
   "devDependencies": {
     "@printfarm/tsconfig": "workspace:*",
+    "@types/bcryptjs": "^3.0.0",
     "@types/node": "^22.0.0",
     "@types/ws": "^8.5.13",
     "@vitest/coverage-v8": "^2.0.0",
