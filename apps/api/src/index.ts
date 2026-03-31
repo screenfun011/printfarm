@@ -8,6 +8,7 @@ import { features } from '@printfarm/config/features'
 import { API_ERROR_CODES } from '@printfarm/shared/types'
 import { apiEnv } from './env'
 import { defaultRateLimit } from './middleware/rate-limit'
+import { aiRouter } from './modules/ai/router'
 import { authRouter } from './modules/auth/router'
 import { filesRouter } from './modules/files/router'
 import { jobsRouter } from './modules/jobs/router'
@@ -36,6 +37,7 @@ app.get('/health', (c) => c.json({
   },
 }))
 
+app.route('/ai', aiRouter)
 app.route('/auth', authRouter)
 app.route('/files', filesRouter)
 app.route('/jobs', jobsRouter)
