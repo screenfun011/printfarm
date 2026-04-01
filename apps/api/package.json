@@ -10,7 +10,8 @@
     "test": "vitest run --coverage",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
-    "seed:super-admin": "node --experimental-strip-types src/scripts/seed-super-admin.ts"
+    "db:migrate": "node --env-file .env --experimental-strip-types src/scripts/migrate.ts",
+    "seed:super-admin": "node --env-file .env --experimental-strip-types src/scripts/seed-super-admin.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1021.0",
