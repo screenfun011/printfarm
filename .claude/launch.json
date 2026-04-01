@@ -1,0 +1,23 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "API (Hono)",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["--filter", "@printfarm/api", "dev"],
+      "port": 3000
+    },
+    {
+      "name": "Web (Vite)",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["--filter", "@printfarm/web", "dev"],
+      "port": 5173
+    },
+    {
+      "name": "Mobile (Expo)",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["--filter", "@printfarm/mobile", "dev"],
+      "port": 8081
+    }
+  ]
+}

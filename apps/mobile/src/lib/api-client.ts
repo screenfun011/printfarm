@@ -25,16 +25,26 @@ export { ApiError }
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const token = tokenStorage.get()
 
-  const res = await fetch(`${BASE_URL}${path}`, {
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      ...options?.headers,
-    },
-  })
+  let res: Response
+  try {
+    res = await fetch(`${BASE_URL}${path}`, {
+      ...options,
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...options?.headers,
+      },
+    })
+  } catch {
+    throw new ApiError('NETWORK_ERROR', 'Server nije dostupan', 0)
+  }
 
-  const data = await res.json() as { success: boolean; data?: T; error?: { code: string; message: string } }
+  let data: { success: boolean; data?: T; error?: { code: string; message: string } }
+  try {
+    data = await res.json()
+  } catch {
+    throw new ApiError('NETWORK_ERROR', `Neočekivani odgovor servera (${res.status})`, res.status)
+  }
 
   if (!data.success) {
     throw new ApiError(data.error!.code, data.error!.message, res.status)
@@ -46,13 +56,23 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
 async function upload<T>(path: string, formData: FormData): Promise<T> {
   const token = tokenStorage.get()
 
-  const res = await fetch(`${BASE_URL}${path}`, {
-    method: 'POST',
-    headers: token ? { Authorization: `Bearer ${token}` } : {},
-    body: formData,
-  })
+  let res: Response
+  try {
+    res = await fetch(`${BASE_URL}${path}`, {
+      method: 'POST',
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: formData,
+    })
+  } catch {
+    throw new ApiError('NETWORK_ERROR', 'Server nije dostupan', 0)
+  }
 
-  const data = await res.json() as { success: boolean; data?: T; error?: { code: string; message: string } }
+  let data: { success: boolean; data?: T; error?: { code: string; message: string } }
+  try {
+    data = await res.json()
+  } catch {
+    throw new ApiError('NETWORK_ERROR', `Neočekivani odgovor servera (${res.status})`, res.status)
+  }
 
   if (!data.success) {
     throw new ApiError(data.error!.code, data.error!.message, res.status)

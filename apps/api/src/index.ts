@@ -3,7 +3,7 @@ import { cors } from 'hono/cors'
 import { logger } from 'hono/logger'
 import { HTTPException } from 'hono/http-exception'
 import { serve } from '@hono/node-server'
-import { createServer } from 'node:http'
+import type { Server } from 'node:http'
 import { features } from '@printfarm/config/features'
 import { API_ERROR_CODES } from '@printfarm/shared/types'
 import { apiEnv } from './env'
@@ -68,15 +68,12 @@ app.notFound((c) => c.json({
   error: { code: API_ERROR_CODES.NOT_FOUND, message: 'Ruta ne postoji' },
 }, 404))
 
-const httpServer = createServer()
-
-serve({
+const httpServer = serve({
   fetch: app.fetch,
   port: apiEnv.PORT,
-  serverOptions: {},
 }, (info) => {
   console.log(`PrintFarm API pokrenut na portu ${info.port} [${apiEnv.DEPLOYMENT_MODE}]`)
-})
+}) as unknown as Server
 
 createWsServer(httpServer)
 
