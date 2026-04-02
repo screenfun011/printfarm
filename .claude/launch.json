@@ -3,21 +3,15 @@
   "configurations": [
     {
       "name": "API (Hono)",
-      "runtimeExecutable": "pnpm",
-      "runtimeArgs": ["--filter", "@printfarm/api", "dev"],
+      "runtimeExecutable": "/bin/bash",
+      "runtimeArgs": ["/Users/nikola/farmprint/.claude/run-api.sh"],
       "port": 3000
     },
     {
       "name": "Web (Vite)",
-      "runtimeExecutable": "pnpm",
-      "runtimeArgs": ["--filter", "@printfarm/web", "dev"],
+      "runtimeExecutable": "/bin/bash",
+      "runtimeArgs": ["/Users/nikola/farmprint/.claude/run-web.sh"],
       "port": 5173
-    },
-    {
-      "name": "Mobile (Expo)",
-      "runtimeExecutable": "pnpm",
-      "runtimeArgs": ["--filter", "@printfarm/mobile", "dev"],
-      "port": 8081
     }
   ]
 }

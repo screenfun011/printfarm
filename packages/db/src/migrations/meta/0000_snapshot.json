@@ -1,5 +1,5 @@
 {
-  "id": "9710ccb7-a258-455f-99c4-424ac97a045b",
+  "id": "58af1c38-c8ae-4ece-9bbb-091f265ea58c",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -695,7 +695,7 @@
         },
         "status": {
           "name": "status",
-          "type": "printer_status",
+          "type": "printer_state",
           "typeSchema": "public",
           "primaryKey": false,
           "notNull": true,
@@ -2499,8 +2499,8 @@
         "h2d"
       ]
     },
-    "public.printer_status": {
-      "name": "printer_status",
+    "public.printer_state": {
+      "name": "printer_state",
       "schema": "public",
       "values": [
         "idle",

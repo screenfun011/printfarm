@@ -7,7 +7,7 @@ vi.mock('bcryptjs', () => ({
   compare: vi.fn().mockResolvedValue(true),
 }))
 
-vi.mock('otplib', () => ({
+vi.mock('../../../lib/totp.js', () => ({
   authenticator: {
     verify: vi.fn().mockReturnValue(true),
     generateSecret: vi.fn().mockReturnValue('MOCK_TOTP_SECRET'),
@@ -124,7 +124,8 @@ describe('authService.login', () => {
     const result = await service.login({ email: 'test@example.com', password: 'Password1' }, META)
     expect('token' in result).toBe(true)
     if ('token' in result) {
-      expect(result.user.email).toBe('test@example.com')
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect((result as any).user.email).toBe('test@example.com')
     }
   })
 
@@ -138,7 +139,8 @@ describe('authService.login', () => {
 
   it('baca 401 za pogrešnu lozinku', async () => {
     const { compare } = await import('bcryptjs')
-    vi.mocked(compare).mockResolvedValueOnce(false)
+    // bcryptjs types have overloads; cast to select the Promise overload
+    vi.mocked(compare as (s: string, h: string) => Promise<boolean>).mockResolvedValueOnce(false)
 
     const db = makeDb([[mockUser]])
     const service = createAuthService({ db })
@@ -157,7 +159,7 @@ describe('authService.login', () => {
   })
 
   it('baca 401 za neispravan TOTP kod', async () => {
-    const { authenticator } = await import('otplib')
+    const { authenticator } = await import('../../../lib/totp.js')
     vi.mocked(authenticator.verify).mockReturnValueOnce(false)
 
     const db = makeDb([
@@ -267,7 +269,7 @@ describe('authService.verifyTotp', () => {
   })
 
   it('baca 400 za neispravan kod', async () => {
-    const { authenticator } = await import('otplib')
+    const { authenticator } = await import('../../../lib/totp.js')
     vi.mocked(authenticator.verify).mockReturnValueOnce(false)
 
     const db = makeDb([

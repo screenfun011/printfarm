@@ -20,7 +20,7 @@ export const printerModelEnum = pgEnum('printer_model', [
   'h2d',
 ])
 
-export const printerStatusEnum = pgEnum('printer_status', [
+export const printerStatusEnum = pgEnum('printer_state', [
   'idle',
   'printing',
   'paused',

@@ -1,15 +1,15 @@
 /**
  * Seed super admin account.
- * Usage: node --experimental-strip-types src/scripts/seed-super-admin.ts
+ * Usage: pnpm --filter @printfarm/api seed:super-admin
  *
  * Set env vars before running:
- *   SA_EMAIL=... SA_PASSWORD=... SA_FULL_NAME=... node --experimental-strip-types src/scripts/seed-super-admin.ts
+ *   SA_EMAIL=... SA_PASSWORD=... SA_FULL_NAME=... pnpm --filter @printfarm/api seed:super-admin
  */
 
 import bcryptjs from 'bcryptjs'
-import { authenticator } from 'otplib'
-import { drizzle } from 'drizzle-orm/node-postgres'
-import pg from 'pg'
+import { drizzle } from 'drizzle-orm/postgres-js'
+import postgres from 'postgres'
+import { authenticator } from '../lib/totp.js'
 import { superAdmins } from '@printfarm/db'
 
 const email = process.env.SA_EMAIL
@@ -27,8 +27,8 @@ if (!databaseUrl) {
   process.exit(1)
 }
 
-const pool = new pg.Pool({ connectionString: databaseUrl })
-const db = drizzle(pool)
+const sql = postgres(databaseUrl, { max: 1 })
+const db = drizzle(sql)
 
 const passwordHash = await bcryptjs.hash(password, 12)
 const totpSecret = authenticator.generateSecret()
@@ -38,12 +38,18 @@ const [admin] = await db.insert(superAdmins).values({
   passwordHash,
   fullName,
   totpSecret,
-  totpEnabled: false, // može se uključiti naknadno iz admin panela
+  totpEnabled: false,
 }).returning({ id: superAdmins.id, email: superAdmins.email })
+
+if (!admin) {
+  console.error('Greška: super admin nije kreiran')
+  await sql.end()
+  process.exit(1)
+}
 
 console.log('✓ Super admin kreiran:')
 console.log('  ID:    ', admin.id)
 console.log('  Email: ', admin.email)
 console.log('  TOTP secret (sačuvaj!):', totpSecret)
 
-await pool.end()
+await sql.end()

@@ -8,13 +8,15 @@ export function getS3Client(): S3Client {
 
   _s3 = new S3Client({
     region: apiEnv.S3_REGION,
-    credentials: apiEnv.S3_ACCESS_KEY_ID && apiEnv.S3_SECRET_ACCESS_KEY
+    ...(apiEnv.S3_ACCESS_KEY_ID && apiEnv.S3_SECRET_ACCESS_KEY
       ? {
-          accessKeyId: apiEnv.S3_ACCESS_KEY_ID,
-          secretAccessKey: apiEnv.S3_SECRET_ACCESS_KEY,
+          credentials: {
+            accessKeyId: apiEnv.S3_ACCESS_KEY_ID,
+            secretAccessKey: apiEnv.S3_SECRET_ACCESS_KEY,
+          },
         }
-      : undefined,
-    ...(apiEnv.S3_ENDPOINT ? { endpoint: apiEnv.S3_ENDPOINT, forcePathStyle: true } : {}),
+      : {}),
+    ...(apiEnv.S3_ENDPOINT ? { endpoint: apiEnv.S3_ENDPOINT, forcePathStyle: true as const } : {}),
   })
 
   return _s3

@@ -2,7 +2,7 @@ CREATE TYPE "public"."tenant_role" AS ENUM('owner', 'admin', 'operator', 'viewer
 CREATE TYPE "public"."tenant_status" AS ENUM('trial', 'trial_expired', 'active', 'suspended', 'blocked', 'deleted');--> statement-breakpoint
 CREATE TYPE "public"."device_status" AS ENUM('provisioning', 'paired', 'online', 'offline', 'error');--> statement-breakpoint
 CREATE TYPE "public"."printer_model" AS ENUM('a1', 'a1_mini', 'p1p', 'p1s', 'x1c', 'x1e', 'h2d');--> statement-breakpoint
-CREATE TYPE "public"."printer_status" AS ENUM('idle', 'printing', 'paused', 'error', 'offline');--> statement-breakpoint
+CREATE TYPE "public"."printer_state" AS ENUM('idle', 'printing', 'paused', 'error', 'offline');--> statement-breakpoint
 CREATE TYPE "public"."assignment_status" AS ENUM('queued', 'printing', 'completed', 'failed', 'canceled', 'skipped');--> statement-breakpoint
 CREATE TYPE "public"."job_status" AS ENUM('queued', 'preparing', 'printing', 'completed', 'failed', 'canceled', 'paused');--> statement-breakpoint
 CREATE TYPE "public"."license_status" AS ENUM('inactive', 'active', 'revoked');--> statement-breakpoint
@@ -111,7 +111,7 @@ CREATE TABLE IF NOT EXISTS "printers" (
 	"serial_number" varchar(255) NOT NULL,
 	"ip_address" varchar(45) NOT NULL,
 	"access_code" varchar(255) NOT NULL,
-	"status" "printer_status" DEFAULT 'offline' NOT NULL,
+	"status" "printer_state" DEFAULT 'offline' NOT NULL,
 	"is_active" boolean DEFAULT true NOT NULL,
 	"last_seen_at" timestamp with time zone,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,

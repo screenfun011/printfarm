@@ -4,14 +4,14 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "node --env-file .env --watch --experimental-strip-types src/index.ts",
+    "dev": "tsx watch --env-file .env src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
     "test": "vitest run --coverage",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
-    "db:migrate": "node --env-file .env --experimental-strip-types src/scripts/migrate.ts",
-    "seed:super-admin": "node --env-file .env --experimental-strip-types src/scripts/seed-super-admin.ts"
+    "db:migrate": "tsx --env-file .env src/scripts/migrate.ts",
+    "seed:super-admin": "tsx --env-file .env src/scripts/seed-super-admin.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1021.0",
@@ -24,7 +24,7 @@
     "drizzle-orm": "^0.36.0",
     "hono": "^4.7.0",
     "ioredis": "^5.4.1",
-    "otplib": "^13.4.0",
+    "postgres": "^3.4.0",
     "ws": "^8.18.0",
     "zod": "^3.23.8"
   },
@@ -34,6 +34,7 @@
     "@types/node": "^22.0.0",
     "@types/ws": "^8.5.13",
     "@vitest/coverage-v8": "^2.0.0",
+    "tsx": "^4.0.0",
     "typescript": "^5.6.0",
     "vitest": "^2.0.0"
   }

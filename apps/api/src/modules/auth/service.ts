@@ -1,6 +1,6 @@
 import { randomBytes, createHash } from 'crypto'
 import { hash as bcryptHash, compare as bcryptCompare } from 'bcryptjs'
-import { authenticator } from 'otplib'
+import { authenticator } from '../../lib/totp.js'
 import { eq, and } from 'drizzle-orm'
 import { users, tenants, tenantUsers, sessions, type Database } from '@printfarm/db'
 import { API_ERROR_CODES } from '@printfarm/shared/types'
@@ -43,6 +43,7 @@ export function createAuthService({ db }: AuthServiceDeps) {
       })
       .returning({ id: sessions.id })
 
+    if (!session) throw new Error('Failed to create session')
     return { token: raw, sessionId: session.id }
   }
 
@@ -71,6 +72,7 @@ export function createAuthService({ db }: AuthServiceDeps) {
           trialEndsAt: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
         })
         .returning({ id: tenants.id, name: tenants.name })
+      if (!tenant) throw new Error('Failed to create tenant')
 
       const [user] = await db
         .insert(users)
@@ -84,6 +86,7 @@ export function createAuthService({ db }: AuthServiceDeps) {
           email: users.email,
           fullName: users.fullName,
         })
+      if (!user) throw new Error('Failed to create user')
 
       await db
         .insert(tenantUsers)

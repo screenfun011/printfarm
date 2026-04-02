@@ -11,7 +11,8 @@ const jobService = createJobService({ db })
 
 const idParam = zValidator('param', z.object({ id: z.string().uuid() }))
 
-function handleJobError(err: unknown, c: Parameters<Parameters<typeof Hono.prototype.get>[1]>[0]) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function handleJobError(err: unknown, c: any) {
   if (err instanceof JobServiceError) {
     return c.json(
       { success: false, error: { code: err.code, message: err.message } },

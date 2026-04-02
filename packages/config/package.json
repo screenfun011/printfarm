@@ -2,6 +2,7 @@
   "name": "@printfarm/config",
   "version": "0.0.1",
   "private": true,
+  "type": "module",
   "exports": {
     "./env": "./src/env.ts",
     "./features": "./src/features.ts"

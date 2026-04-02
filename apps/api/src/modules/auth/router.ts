@@ -1,6 +1,5 @@
 import { Hono } from 'hono'
 import { zValidator } from '@hono/zod-validator'
-import { z } from 'zod'
 import { authMiddleware } from '../../middleware/auth'
 import { tenantMiddleware } from '../../middleware/tenant'
 import { db } from '../../lib/db'

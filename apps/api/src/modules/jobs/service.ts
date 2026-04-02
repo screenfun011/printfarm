@@ -147,6 +147,8 @@ export function createJobService({ db }: JobServiceDeps) {
           createdAt: printJobs.createdAt,
         })
 
+      if (!job) throw new JobServiceError('INTERNAL_ERROR', 'Greška pri kreiranju posla', 500)
+
       // Create assignments round-robin across printers
       const copies = data.copies ?? 1
       const assignmentValues = Array.from({ length: copies }, (_, i) => ({

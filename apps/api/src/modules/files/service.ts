@@ -146,6 +146,7 @@ export function createFileService({ db, s3, bucket, maxFileSizeMb = DEFAULT_MAX_
           createdAt: printFiles.createdAt,
         })
 
+      if (!file) throw new FileServiceError('INTERNAL_ERROR', 'Greška pri čuvanju fajla', 500)
       return file
     },
 

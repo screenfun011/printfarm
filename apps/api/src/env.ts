@@ -14,6 +14,7 @@ const apiEnvSchema = z.object({
   S3_SECRET_ACCESS_KEY: z.string().optional(),
   S3_ENDPOINT: z.string().url().optional(),
   MAX_FILE_SIZE_MB: z.coerce.number().int().min(1).default(200),
+  BRIDGE_TOKEN: z.string().min(16).optional(),
 })
 
 function parseApiEnv() {

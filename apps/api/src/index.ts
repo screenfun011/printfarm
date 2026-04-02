@@ -13,6 +13,7 @@ import { authRouter } from './modules/auth/router'
 import { filesRouter } from './modules/files/router'
 import { jobsRouter } from './modules/jobs/router'
 import { printersRouter } from './modules/printers/router'
+import { bridgeRouter } from './modules/bridge/router'
 import { createWsServer } from './ws/server'
 import { closeDb } from './lib/db'
 
@@ -42,6 +43,7 @@ app.route('/auth', authRouter)
 app.route('/files', filesRouter)
 app.route('/jobs', jobsRouter)
 app.route('/printers', printersRouter)
+app.route('/bridge', bridgeRouter)
 
 app.onError((err, c) => {
   if (err instanceof HTTPException) {
